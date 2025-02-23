@@ -1,2 +1,2 @@
 # ast
-Library for trees typically used in compiler front-ends.
+Library for trees typically produced from compiler front-ends.
