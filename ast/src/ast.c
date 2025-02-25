@@ -6,6 +6,11 @@
 
 #include "ast.h"
 
+
+
+
+/* ************************************************** */
+
 struct ast_t {
    // The source for this node (helpful for diagnostic messages)
    char    *srcfile_name;
@@ -56,6 +61,9 @@ ast_t *ast_new (ast_t *parent,
          goto cleanup;
    }
 
+   if (!(ast_set_tag (ret, "")))
+      goto cleanup;
+
    ret->srcfile_name = ds_str_dup (srcfile_name);
    ret->srcfile_line = srcfile_line;
    ret->srcfile_cpos = srcfile_cpos;
@@ -81,6 +89,64 @@ void ast_del (ast_t **ast)
    free ((*ast)->tag);
    free (*ast);
    *ast = NULL;
+}
+
+
+
+
+/* ************************************************** */
+
+static void ast_walker_func (ast_t *ast,
+                             ast_walker_func_t *fptr,
+                             void *params,
+                             size_t depth)
+{
+   if (!ast)
+      return;
+
+   fptr (ast, params, depth);
+   for (size_t i=0; i<ast->nchildren; i++) {
+      fptr (ast->children[i], params, depth + 1);
+   }
+}
+
+void ast_walk (ast_t *ast, ast_walker_func_t *fptr, void *params)
+{
+   ast_walker_func (ast, fptr, params, 0);
+}
+
+
+
+
+/* ************************************************** */
+
+void *ast_get_payload (ast_t *ast)
+{
+   if (!ast)
+      return NULL;
+
+   return ast->payload;
+}
+
+void *ast_set_payload (ast_t *ast, void *payload)
+{
+   if (!ast)
+      return NULL;
+
+   return ast->payload = payload;
+}
+
+
+
+
+/* ************************************************** */
+
+const char *ast_get_tag (ast_t *ast)
+{
+   if (!ast)
+      return NULL;
+
+   return ast->tag;
 }
 
 const char *ast_set_tag (ast_t *ast, const char *tag)

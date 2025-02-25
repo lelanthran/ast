@@ -4,7 +4,7 @@
 
 typedef struct ast_t ast_t;
 
-typedef void (ast_walker_func_t) (ast_t *node, size_t depth, void *params);
+typedef void (ast_walker_func_t) (ast_t *node, void *params, size_t depth);
 
 #ifdef __cplusplus
 extern "C" {
