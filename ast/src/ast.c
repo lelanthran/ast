@@ -1,8 +1,10 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "ds_str.h"
+#include "ds_hmap.h"
 
 #include "ast.h"
 
@@ -17,11 +19,15 @@ struct ast_t {
    size_t   srcfile_line;
    size_t   srcfile_cpos;
 
-   // A tag for this node, set by the caller. This is essentially the node name
+   // A tag for this node, set by the caller. This is essentially the node name (if
+   // a symbol) or the node value (if a literal)
    char    *tag;
 
    // A payload, managed by the caller
    void    *payload;
+
+   // A set of key-value attributes
+   ds_hmap_t *attributes;
 
    // The parent element, NULL if root node
    ast_t   *parent;
@@ -76,6 +82,18 @@ cleanup:
    return ret;
 }
 
+static void attribute_free (const void *key, size_t key_len,
+                            void *value, size_t value_len,
+                            void *extra_param)
+{
+   (void)key;
+   (void)key_len;
+   (void)value_len;
+   (void)extra_param;
+
+   free (value);
+}
+
 void ast_del (ast_t **ast)
 {
    if (!ast || !*ast)
@@ -84,6 +102,8 @@ void ast_del (ast_t **ast)
    for (size_t i=0; i<(*ast)->nchildren; i++) {
       ast_del (&(*ast)->children[i]);
    }
+
+   ds_hmap_iterate ((*ast)->attributes, attribute_free, NULL);
 
    free ((*ast)->srcfile_name);
    free ((*ast)->tag);
@@ -157,4 +177,7 @@ const char *ast_set_tag (ast_t *ast, const char *tag)
    free (ast->tag);
    return ast->tag = ds_str_dup (tag);
 }
+
+
+/* ************************************************** */
 

@@ -1,6 +1,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+#include "ds_str.h"
 
 #include "ast.h"
 
